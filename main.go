@@ -3,15 +3,37 @@ package main
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v3" // Must be v3
+	"github.com/gofiber/fiber/v3" // Updated to v3
 )
+
+type User struct {
+	Name string `json:"name"`
+	Role string `json:"role"`
+}
 
 func main() {
 	app := fiber.New()
 
-	// In v3, use 'c fiber.Ctx' without the '*' pointer
-	app.Get("/", func(c fiber.Ctx) error {
-		return c.SendString("Hello from Fiber v3!")
+	app.Get("/", func(c fiber.Ctx) error { 
+		return c.SendString("Welcome to my Fiber v3 API! 'Belton'")
+	})
+
+	app.Get("/status", func(c fiber.Ctx) error { 
+		return c.JSON(fiber.Map{
+			"status": "online",
+			"code":   200,
+		})
+	})
+
+	app.Post("/user", func(c fiber.Ctx) error { // Removed '*' for v3
+		user := new(User)
+		if err := c.Bind().JSON(user); err != nil { // v3 uses Bind() for cleaner parsing
+			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		}
+		return c.JSON(fiber.Map{
+			"message": "User created successfully",
+			"user":    user,
+		})
 	})
 
 	log.Fatal(app.Listen(":3000"))
