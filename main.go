@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	// Native v3 imports
-	"github.com/gofiber/fiber/v3" 
-	scalar "github.com/yokeTH/gofiber-scalar"
+	"github.com/gofiber/fiber/v3"
+	// FIXED: Importing the dedicated v3 submodule package
+	scalar "github.com/yokeTH/gofiber-scalar/scalar/v3"
 )
 
 type User struct {
@@ -19,39 +19,50 @@ var users = []User{
 }
 
 func main() {
-	// Initialize Fiber v3 app instance
 	app := fiber.New()
 
-	// Use Scalar middleware 
-	app.Use("/docs", scalar.New(scalar.Config{
-		Title: "Fiber v3 API Reference",
+	// A basic valid schema string to make sure something loads in your browser
+	const openApiSpec = `{
+	  "openapi": "3.0.0",
+	  "info": { "title": "Fiber v3 API", "version": "1.0.0" },
+	  "paths": {
+	    "/users": {
+	      "get": {
+	        "summary": "Fetch all users",
+	        "responses": { "200": { "description": "Success" } }
+	      }
+	    }
+	  }
+	}`
+
+	// FIXED: Routing signature and configuration attributes matched to v3 architecture
+	app.Get("/docs/*", scalar.New(scalar.Config{
+		Title:             "Fiber v3 API Reference",
+		Path:              "docs",
+		FileContentString: openApiSpec,
 	}))
 
-	app.Get("/", func(c fiber.Ctx) error { 
+	app.Get("/", func(c fiber.Ctx) error {
 		return c.SendString("Welcome to my Fiber v3 API! 'Belton'")
 	})
 
-	app.Get("/status", func(c fiber.Ctx) error { 
+	app.Get("/status", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status": "online",
 			"code":   200,
 		})
 	})
 
-	// Fetch users GET endpoint
 	app.Get("/users", func(c fiber.Ctx) error {
 		return c.JSON(users)
 	})
 
-	app.Post("/user", func(c fiber.Ctx) error { 
+	app.Post("/users", func(c fiber.Ctx) error {
 		user := new(User)
-		// Fiber v3 structural data binding pattern
-		if err := c.Bind().JSON(user); err != nil { 
+		if err := c.Bind().JSON(user); err != nil {
 			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}
-		
 		users = append(users, *user)
-
 		return c.JSON(fiber.Map{
 			"message": "User created successfully",
 			"user":    user,
