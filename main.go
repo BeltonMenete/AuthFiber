@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v3" // Updated to v3
+	"github.com/gofiber/fiber/v3" 
 )
 
 type User struct {
@@ -25,9 +25,9 @@ func main() {
 		})
 	})
 
-	app.Post("/user", func(c fiber.Ctx) error { // Removed '*' for v3
+	app.Post("/user", func(c fiber.Ctx) error { 
 		user := new(User)
-		if err := c.Bind().JSON(user); err != nil { // v3 uses Bind() for cleaner parsing
+		if err := c.Bind().JSON(user); err != nil { 
 			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}
 		return c.JSON(fiber.Map{
