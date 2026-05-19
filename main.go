@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/gofiber/contrib/v3/swaggerui"
+	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
-	// FIXED: Importing the dedicated v3 submodule package
 	scalar "github.com/yokeTH/gofiber-scalar/scalar/v3"
 )
 
@@ -21,10 +22,9 @@ var users = []User{
 func main() {
 	app := fiber.New()
 
-	// A basic valid schema string to make sure something loads in your browser
 	const openApiSpec = `{
 	  "openapi": "3.0.0",
-	  "info": { "title": "Fiber v3 API", "version": "1.0.0" },
+	  "info": { "title": "Fiber v3 API Reference", "version": "1.0.0" },
 	  "paths": {
 	    "/users": {
 	      "get": {
@@ -35,12 +35,25 @@ func main() {
 	  }
 	}`
 
-	// FIXED: Routing signature and configuration attributes matched to v3 architecture
+	app.Get("/swagger.json", func(c fiber.Ctx) error {
+		c.Set("Content-Type", "application/json")
+		return c.SendString(openApiSpec)
+	})
+
 	app.Get("/docs/*", scalar.New(scalar.Config{
-		Title:             "Fiber v3 API Reference",
+		Title:             "Fiber v3 API Reference (Scalar)",
 		Path:              "docs",
 		FileContentString: openApiSpec,
 	}))
+
+	app.Use(swaggerui.New(swaggerui.Config{
+		Title:    "Fiber v3 API Reference (SwaggerUI)",
+		Path:     "swagger-ui",
+		URL:      "/swagger.json",
+		BasePath: "/",
+	}))
+
+	app.Get("/swagger/*", swaggo.HandlerDefault)
 
 	app.Get("/", func(c fiber.Ctx) error {
 		return c.SendString("Welcome to my Fiber v3 API! 'Belton'")
